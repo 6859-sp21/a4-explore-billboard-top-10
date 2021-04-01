@@ -1,23 +1,40 @@
+// example of a single song object
+// {
+//   "url": "http://www.billboard.com/charts/hot-100/1958-10-04",
+//   "WeekID": "10/4/1958",
+//   "Week Position": "10",
+//   "Song": "Near You",
+//   "Performer": "Roger Williams",
+//   "SongID": "Near YouRoger Williams",
+//   "Instance": "1",
+//   "Previous Week Position": "10",
+//   "Peak Position": "10",
+//   "Weeks on Chart": "8"
+// }
+
 let billboardData = new Array();
 let xScale = null;
+let yScale = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
-let HEIGHT = null;
-const BAR_HEIGHT = 25;
+const HEIGHT = 500;
 
 //constants
 
 function initConstants() {
   xScale = d3
     .scaleLinear()
-    .domain([1, d3.max(billboardData, (d) => d["Weeks on Chart"])])
+    .domain([0, d3.max(billboardData, (d) => +d["Weeks on Chart"])])
     .range([0, WIDTH]);
+
+  yScale = d3
+    .scaleBand()
+    .domain(billboardData.map((d) => +d["Week Position"]))
+    .range([HEIGHT, 0]);
 
   colorScale = d3
     .scaleOrdinal(d3.schemeTableau10)
     .domain(billboardData.map((d) => d["SongID"]));
-
-  HEIGHT = `${billboardData.length * BAR_HEIGHT}px`;
 }
 
 function createChart() {
@@ -28,25 +45,22 @@ function createChart() {
     .attr("height", HEIGHT)
     .attr("overflow", "visible");
 
-  const barChart = container
-    .selectAll("rect")
+  const g = container
+    .selectAll("g")
     .data(billboardData)
-    .join("rect")
-    .attr("x", 0)
-    .attr("y", (d, i) => i * BAR_HEIGHT)
-    .attr("width", (d) => xScale(d["Weeks on Chart"]))
-    .attr("height", BAR_HEIGHT)
-    .style("fill", (d) => colorScale(d["SongID"]))
-    .style("stroke", "white");
+    .enter()
+    .append("g")
+    .attr("transform", (d) => `translate(0, ${yScale(+d["Week Position"])})`);
 
-  container
-    .selectAll("text")
-    .data(billboardData)
-    .join("text")
+  g.append("rect")
+    .attr("width", (d) => xScale(+d["Weeks on Chart"]))
+    .attr("height", yScale.bandwidth())
+    .style("fill", (d) => colorScale(d["SongID"]));
+
+  g.append("text")
     .attr("x", WIDTH)
-    .attr("y", (d, i) => i * BAR_HEIGHT)
-    .attr("dx", "200")
-    .attr("dy", "1.2em")
+    .attr("dx", "50")
+    .attr("dy", "2em")
     .attr("fill", "black")
     .text((d) => d["Song"]);
 }
