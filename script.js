@@ -13,32 +13,47 @@
 // }
 
 let billboardData = new Array();
+let currentBillboardData = new Array();
+let container = null;
 let xScale = null;
 let yScale = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
 const HEIGHT = 500;
+const MARGIN = {
+  top: 10,
+  right: 10,
+  bottom: 20,
+  left: 20,
+};
+let xMargin = null;
+let yMargin = null;
+let index = 0;
 
 //constants
 
-function initConstants() {
+function updateConstants() {
   xScale = d3
     .scaleLinear()
-    .domain([0, d3.max(billboardData, (d) => +d["Weeks on Chart"])])
+    .domain([0, d3.max(currentBillboardData, (d) => +d["Weeks on Chart"])])
     .range([0, WIDTH]);
+
+  xMargin = xScale.copy().range([MARGIN.left, WIDTH - MARGIN.right]);
 
   yScale = d3
     .scaleBand()
-    .domain(billboardData.map((d) => +d["Week Position"]))
+    .domain(currentBillboardData.map((d) => +d["Week Position"]))
     .range([HEIGHT, 0]);
+
+  yMargin = yScale.copy().range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
   colorScale = d3
     .scaleOrdinal(d3.schemeTableau10)
-    .domain(billboardData.map((d) => d["SongID"]));
+    .domain(currentBillboardData.map((d) => d["SongID"]));
 }
 
 function createChart() {
-  const container = d3
+  container = d3
     .select("body")
     .append("svg")
     .attr("width", WIDTH)
@@ -47,14 +62,17 @@ function createChart() {
 
   const g = container
     .selectAll("g")
-    .data(billboardData)
+    .data(currentBillboardData)
     .enter()
     .append("g")
-    .attr("transform", (d) => `translate(0, ${yScale(+d["Week Position"])})`);
+    .attr(
+      "transform",
+      (d) => `translate(${MARGIN.left}, ${yMargin(+d["Week Position"])})`
+    );
 
   g.append("rect")
-    .attr("width", (d) => xScale(+d["Weeks on Chart"]))
-    .attr("height", yScale.bandwidth())
+    .attr("width", (d) => xMargin(+d["Weeks on Chart"]) - xMargin(0))
+    .attr("height", yMargin.bandwidth())
     .style("fill", (d) => colorScale(d["SongID"]));
 
   g.append("text")
@@ -65,19 +83,96 @@ function createChart() {
     .text((d) => d["Song"]);
 }
 
+function updateAxis() {
+  container
+    .append("g")
+    .attr("transform", `translate(0, ${HEIGHT - MARGIN.bottom})`)
+    .call(d3.axisBottom(xMargin))
+    .append("text")
+    .attr("text-anchor", "end")
+    .attr("fill", "black")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold")
+    .attr("x", WIDTH - MARGIN.right)
+    .attr("y", 50)
+    .text("Weeks on Chart");
+
+  container
+    .append("g")
+    .attr("transform", `translate(${MARGIN.left}, 0)`)
+    .call(d3.axisLeft(yMargin))
+    .append("text")
+    .attr("transform", `translate(20, ${MARGIN.top}) rotate(-90)`)
+    .attr("y", -50)
+    .attr("text-anchor", "end")
+    .attr("fill", "black")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold")
+    .text("Position on Chart");
+}
+
+function updateData() {
+  currentBillboardData = billboardData.slice(10 * index, 10 * index + 10);
+  console.log(currentBillboardData);
+}
+
+function updateChart() {
+  const newChart = container.selectAll("g").data(currentBillboardData);
+
+  const g = newChart
+    .enter()
+    .append("g")
+    .attr(
+      "transform",
+      (d) => `translate(${MARGIN.left}, ${yMargin(+d["Week Position"])})`
+    );
+  // ;
+
+  g.append("rect");
+  g.append("text");
+
+  newChart
+    .select("rect")
+    .attr("width", (d) => xMargin(+d["Weeks on Chart"]) - xMargin(0))
+    .attr("height", yMargin.bandwidth())
+    .style("fill", (d) => colorScale(d["SongID"]));
+
+  newChart
+    .select("text")
+    .attr("x", WIDTH)
+    .attr("dx", "50")
+    .attr("dy", "2em")
+    .attr("fill", "black")
+    .text((d) => d["Song"]);
+
+  const removedNodes = newChart.exit().remove();
+}
+
+function createSlider() {
+  d3.select("#slider").on("change", function (d) {
+    index = +this.value;
+    console.log(`index changed to ${index}`);
+    updateData();
+    updateConstants();
+    updateChart();
+    updateAxis();
+  });
+}
+
 function getData() {
   const data = d3
     .csv(
       "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff-%20top%2010%20only.csv"
     )
     .then((data) => {
-      billboardData = data.reverse().splice(-1000);
-      billboardData = billboardData.filter(
-        (d) => +d["Week Position"] <= 10 && d["WeekID"] === "10/4/1958"
-      );
+      billboardData = data.reverse().slice(-3000);
+      billboardData = billboardData.filter((d) => +d["Week Position"] <= 10);
       console.log("done fetching data");
-      initConstants();
+      updateData();
+      updateConstants();
       createChart();
+      updateAxis();
+      createSlider();
     });
 }
 
