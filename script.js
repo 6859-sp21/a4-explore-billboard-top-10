@@ -29,6 +29,7 @@ const MARGIN = {
 let xMargin = null;
 let yMargin = null;
 let index = 0;
+let PLAY_SPEED = 500;
 
 //constants
 
@@ -62,7 +63,11 @@ function createChart() {
 
   const g = container
     .selectAll("g")
-    .data(currentBillboardData)
+    .data(currentBillboardData, function (d) {
+      if (d !== undefined) {
+        return d["SongID"];
+      }
+    })
     .enter()
     .append("g")
     .attr(
@@ -117,7 +122,9 @@ function updateData() {
 }
 
 function updateChart() {
-  const newChart = container.selectAll("g").data(currentBillboardData);
+  let newChart = container.selectAll("g").data(currentBillboardData);
+
+  console.dir(newChart);
 
   const g = newChart
     .enter()
@@ -126,7 +133,6 @@ function updateChart() {
       "transform",
       (d) => `translate(${MARGIN.left}, ${yMargin(+d["Week Position"])})`
     );
-  // ;
 
   g.append("rect");
   g.append("text");
@@ -159,13 +165,37 @@ function createSlider() {
   });
 }
 
+function createPlayButton() {
+  d3.select("#play").on("click", function (d) {
+    const animation = setInterval(incrementSlider, PLAY_SPEED);
+
+    function incrementSlider() {
+      if (+document.querySelector("#slider").value < 9) {
+        document.querySelector("#slider").value =
+          +document.querySelector("#slider").value + 1;
+        console.log(
+          `incrementing the slider, new value is ${
+            document.querySelector("#slider").value
+          }`
+        );
+        const event = new Event("change");
+        document.querySelector("#slider").dispatchEvent(event);
+      } else {
+        console.log("animation stopped");
+        clearInterval(animation);
+        document.querySelector("#slider").value = 0;
+      }
+    }
+  });
+}
+
 function getData() {
   const data = d3
     .csv(
       "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff-%20top%2010%20only.csv"
     )
     .then((data) => {
-      billboardData = data.reverse().slice(-3000);
+      billboardData = data.reverse().slice(-1000);
       billboardData = billboardData.filter((d) => +d["Week Position"] <= 10);
       console.log("done fetching data");
       updateData();
@@ -173,6 +203,7 @@ function getData() {
       createChart();
       updateAxis();
       createSlider();
+      createPlayButton();
     });
 }
 
