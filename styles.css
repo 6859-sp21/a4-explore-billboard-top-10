@@ -1,3 +1,15 @@
 body {
     padding-left: 50px;
 }
+
+.hidden {
+    display: hidden;
+}
+
+.tooltip {
+    position: absolute;
+    background-color: bisque;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    opacity: 0;
+}

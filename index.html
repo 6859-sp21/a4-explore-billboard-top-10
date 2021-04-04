@@ -6,12 +6,45 @@
 </head>
 
 <body>
-<h1>First html document</h1>
+<h1>Explore top 10 Billboard</h1>
+<div class="tooltip"></div>
 
-<input type="range" name="slider" id="slider" min="0" max="199" value="0">
+<div>
+<h2>Animation</h2>
+<input type="range" name="slider" id="animation-slider" min="0" max="10" value="0">
 <button id="play">Play</button>
+<button id="stop" disabled>Stop</button>
+</div>
+
+<div>
+  <h2>Animation Delay</h2>
+  <input type="range" name="slider" id="delay-slider" min="200" max="1000" value="0" step="100">
+  <p id="animation-delay">200</p>
+</div>
+
+<div>
+  <label>
+    <input type="checkbox" class="filter" name="isPop"/>
+    Pop
+  </label>
+  <label>
+    <input type="checkbox" class="filter" name="isRap"/>
+    Rap
+  </label>
+  <label>
+    <input type="checkbox" class="filter" name="isCountry"/>
+    Country
+  </label>
+  <label>
+    <input type="checkbox" class="filter" name="isHipHop"/>
+    HipHop
+  </label>
+  <label>
+    <input type="checkbox" class="filter" name="isR&B"/>
+    R&B
+  </label>
+</div>
 <!-- Add a bit of text -->
-<p>This is my first sentence</p>
 
 <!-- Add a svg shape. Note that the 'target' class is attributed to the circle
 <svg> 

@@ -38,7 +38,8 @@ let y = null;
 let names = null;
 const n = 10;
 
-const duration = 500;
+let animationDelay = 1000;
+const DELAY = 100;
 let prev = null;
 let next = null;
 
@@ -49,61 +50,38 @@ let updateBars = null;
 let updateLabels = null;
 let updateAxis = null;
 
+let songIDtoMetaData = null;
+const barSize = 48;
+const animationSlider = document.querySelector("#animation-slider");
+const animationDelayP = document.querySelector("#animation-delay");
+const animationPlayButton = document.querySelector("#play");
+const animationStopButton = document.querySelector("#stop");
+const filterInputs = document.querySelectorAll(".filter");
+const genresSelected = new Set();
+
+let numberOfWeeks = 0;
+let data = [];
+
+let tooltip = null;
+
 //constants
 
-function updateConstants() {
-  xScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(currentBillboardData, (d) => +d["Weeks on Chart"])])
-    .range([0, WIDTH]);
-
-  xMargin = xScale.copy().range([MARGIN.left, WIDTH - MARGIN.right]);
-
-  yScale = d3
+function initializeConstants() {
+  y = d3
     .scaleBand()
-    .domain(currentBillboardData.map((d) => +d["Week Position"]))
-    .range([HEIGHT, 0]);
-
-  yMargin = yScale.copy().range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+    .domain(d3.range(n + 1))
+    .rangeRound([MARGIN.top, MARGIN.top + barSize * (n + 1 + 0.1)])
+    .padding(0.1);
 
   colorScale = d3
     .scaleOrdinal(d3.schemeTableau10)
     .domain(currentBillboardData.map((d) => d["SongID"]));
-}
 
-function createChart() {
-  container = d3
+  tooltip = d3
     .select("body")
-    .append("svg")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT)
-    .attr("overflow", "visible");
-
-  const g = container
-    .selectAll("g")
-    .data(currentBillboardData, function (d) {
-      if (d !== undefined) {
-        return d["SongID"];
-      }
-    })
-    .enter()
-    .append("g")
-    .attr(
-      "transform",
-      (d) => `translate(${MARGIN.left}, ${yMargin(+d["Week Position"])})`
-    );
-
-  g.append("rect")
-    .attr("width", (d) => xMargin(+d["Weeks on Chart"]) - xMargin(0))
-    .attr("height", yMargin.bandwidth())
-    .style("fill", (d) => colorScale(d["SongID"]));
-
-  g.append("text")
-    .attr("x", WIDTH)
-    .attr("dx", "50")
-    .attr("dy", "2em")
-    .attr("fill", "black")
-    .text((d) => d["Song"]);
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 }
 
 function updateAxisOld() {
@@ -134,139 +112,100 @@ function updateAxisOld() {
     .text("Position on Chart");
 }
 
-function updateData() {
-  currentBillboardData = billboardData.slice(10 * index, 10 * index + 10);
-  console.log(currentBillboardData);
-}
-
-function updateChart() {
-  let newChart = container.selectAll("g").data(currentBillboardData);
-
-  console.dir(newChart);
-
-  const g = newChart
-    .enter()
-    .append("g")
-    .attr(
-      "transform",
-      (d) => `translate(${MARGIN.left}, ${yMargin(+d["Week Position"])})`
-    );
-
-  g.append("rect");
-  g.append("text");
-
-  newChart
-    .select("rect")
-    .attr("width", (d) => xMargin(+d["Weeks on Chart"]) - xMargin(0))
-    .attr("height", yMargin.bandwidth())
-    .style("fill", (d) => colorScale(d["SongID"]));
-
-  newChart
-    .select("text")
-    .attr("x", WIDTH)
-    .attr("dx", "50")
-    .attr("dy", "2em")
-    .attr("fill", "black")
-    .text((d) => d["Song"]);
-
-  const removedNodes = newChart.exit().remove();
-}
-
-// function createSlider() {
-//   d3.select("#slider").on("change", function (d) {
-//     index = +this.value;
-//     console.log(`index changed to ${index}`);
-//     updateData();
-//     updateConstants();
-//     updateChart();
-//     updateAxis();
-//   });
-// }
-
 function createSlider() {
-  d3.select("#slider").on("change", function (d) {
+  d3.select("#animation-slider").on("input", function (d) {
     index = +this.value;
     console.log(`index changed to ${index}`);
     playOneFrame();
   });
+
+  d3.select("#delay-slider").on("input", function (d) {
+    animationDelay = +this.value;
+    console.log(`animation delay changed to ${animationDelay}`);
+    animationDelayP.innerHTML = this.value;
+  });
 }
 
-// function createPlayButton() {
-//   d3.select("#play").on("click", function (d) {
-//     const animation = setInterval(incrementSlider, PLAY_SPEED);
-
-//     function incrementSlider() {
-//       if (+document.querySelector("#slider").value < 9) {
-//         document.querySelector("#slider").value =
-//           +document.querySelector("#slider").value + 1;
-//         console.log(
-//           `incrementing the slider, new value is ${
-//             document.querySelector("#slider").value
-//           }`
-//         );
-//         const event = new Event("change");
-//         document.querySelector("#slider").dispatchEvent(event);
-//       } else {
-//         console.log("animation stopped");
-//         clearInterval(animation);
-//         document.querySelector("#slider").value = 0;
-//       }
-//     }
-//   });
-// }
-
-// function incrementSlider() {
-//   if (+document.querySelector("#slider").value < 9) {
-//     document.querySelector("#slider").value =
-//       +document.querySelector("#slider").value + 1;
-//     console.log(
-//       `incrementing the slider, new value is ${
-//         document.querySelector("#slider").value
-//       }`
-//     );
-//     const event = new Event("change");
-//     document.querySelector("#slider").dispatchEvent(event);
-//   } else {
-//     console.log("animation stopped");
-//     clearInterval(animation);
-//     document.querySelector("#slider").value = 0;
-//   }
-// }
+function updateHTMLElements() {
+  animationSlider.max = numberOfWeeks - 1;
+}
 
 function createPlayButton() {
+  let animation = null;
+  function incrementSlider() {
+    if (+animationSlider.value < numberOfWeeks - 1) {
+      animationSlider.value = +animationSlider.value + 1;
+      console.log(
+        `incrementing the slider, new value is ${animationSlider.value}`
+      );
+      const event = new Event("input");
+      animationSlider.dispatchEvent(event);
+    } else {
+      console.log("animation stopped");
+      clearInterval(animation);
+      animationSlider.value = 0;
+      animationPlayButton.disabled = false;
+      animationStopButton.disabled = true;
+    }
+  }
+
   d3.select("#play").on("click", () => {
-    const animation = setInterval(incrementSlider, duration);
-    function incrementSlider() {
-      if (+document.querySelector("#slider").value < 199) {
-        document.querySelector("#slider").value =
-          +document.querySelector("#slider").value + 1;
-        console.log(
-          `incrementing the slider, new value is ${
-            document.querySelector("#slider").value
-          }`
-        );
-        const event = new Event("change");
-        document.querySelector("#slider").dispatchEvent(event);
-      } else {
-        console.log("animation stopped");
-        clearInterval(animation);
-        document.querySelector("#slider").value = 0;
-      }
+    animationPlayButton.disabled = true;
+    animationStopButton.disabled = false;
+    animation = setInterval(incrementSlider, animationDelay + DELAY);
+  });
+
+  d3.select("#stop").on("click", () => {
+    clearInterval(animation);
+    animationPlayButton.disabled = false;
+    animationStopButton.disabled = true;
+  });
+}
+
+function initializeGenreFilters() {
+  console.log("initializing genre filters");
+  d3.selectAll(".filter").on("change", function (d) {
+    console.log(d);
+    if (d.target.checked) {
+      console.log("adding");
+      genresSelected.add(d.target.name);
+    } else {
+      genresSelected.delete(d.target.name);
+    }
+    console.log(`genres selected are:`);
+    console.dir(genresSelected);
+    filterData();
+    updateDataTranforms();
+    updateHTMLElements();
+    playOneFrame();
+  });
+}
+
+function filterData() {
+  billboardData = data.filter((d) => {
+    if (genresSelected.size > 0) {
+      return Array.from(genresSelected).some((genre) => d[genre] === "TRUE");
+    } else {
+      return true;
     }
   });
 }
 
-function testNewMethod() {
+function updateDataTranforms() {
   names = new Set(billboardData.map((d) => d["SongID"]));
 
-  colorScale = d3.scaleOrdinal(d3.schemeTableau10);
-  const categoryByName = new Set(billboardData.map((d) => d["SongID"]));
-  colorScale.domain(categoryByName);
+  songIDtoMetaData = d3.rollup(
+    billboardData,
+    (v) => v[0],
+    (d) => d["SongID"]
+  );
+
+  console.log("Initializing meta data for songs:");
+  console.log(songIDtoMetaData);
 
   dateValues = Array.from(
     d3.rollup(
       billboardData,
-      //last place (rank 10) is evaluating to 1
       ([d]) =>
         new Object({
           "Week Position": +d["Week Position"],
@@ -277,25 +216,18 @@ function testNewMethod() {
     )
   )
     .map(([date, data]) => [new Date(date), data])
-    .sort(([a], [b]) => d3.ascending(a["Week Position"], b["Week Position"]));
+    .sort(([a], [b]) => d3.ascending(a, b));
 
   console.log("Getting date values:");
   console.log(dateValues);
 
+  keyframes = [];
+
   for ([ka, a] of dateValues) {
-    const t = 0;
-    keyframes.push([
-      new Date(ka),
-      rank((name) => {
-        return [
-          a.get(name) === undefined
-            ? Number.MAX_VALUE
-            : a.get(name)["Week Position"],
-          a.get(name) === undefined ? 0 : a.get(name)["Weeks on Chart"],
-        ];
-      }),
-    ]);
+    keyframes.push([new Date(ka), getRankAndMeta(a)]);
   }
+
+  numberOfWeeks = keyframes.length;
 
   console.log("Getting keyframes:");
   console.log(keyframes);
@@ -318,7 +250,30 @@ function testNewMethod() {
   console.log(prev);
   console.log("next");
   console.log(next);
+}
 
+function getRankAndMeta(a) {
+  const data = Array.from(names, (songID) => {
+    const song = songIDtoMetaData.get(songID);
+    return {
+      SongID: songID,
+      "Week Position":
+        a.get(songID) === undefined
+          ? Number.MAX_VALUE
+          : +a.get(songID)["Week Position"],
+      Perfomer: song["Performer"],
+      "Weeks on Chart":
+        a.get(songID) === undefined ? 0 : +a.get(songID)["Weeks on Chart"],
+    };
+  });
+  data.sort((a, b) => d3.ascending(a["Week Position"], b["Week Position"]));
+  data.forEach((d, i) => {
+    d.rank = Math.min(i, n);
+  });
+  return data;
+}
+
+function initializeSvg() {
   container = d3
     .select("body")
     .append("svg")
@@ -331,15 +286,17 @@ function testNewMethod() {
   updateAxis = axis(container);
 }
 
+function updateScales([_, data]) {
+  x = d3
+    .scaleLinear()
+    .domain([0, d3.max(data, (d) => +d["Weeks on Chart"])])
+    .range([MARGIN.left, WIDTH - MARGIN.right]);
+}
+
 function axis(svg) {
   const g = svg.append("g").attr("transform", `translate(0,${MARGIN.top})`);
 
-  return ([date, data], transition) => {
-    x = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => +d["Weeks on Chart"])])
-      .range([MARGIN.left, WIDTH - MARGIN.right]);
-
+  return (_, transition) => {
     const axis = d3
       .axisTop(x)
       .ticks(WIDTH / 160)
@@ -430,38 +387,11 @@ function labels(svg) {
       ));
 }
 
-function rank(value) {
-  const data = Array.from(names, (name) => ({
-    SongID: name,
-    "Week Position": value(name)[0],
-    "Weeks on Chart": value(name)[1],
-  }));
-  data.sort((a, b) => d3.ascending(a["Week Position"], b["Week Position"]));
-  //Week position of 0 = not on chart (or rank 10)
-  //Week position of 10 = hit number 1 (or rank 0)
-  for (let i = 0; i < data.length; ++i) data[i].rank = Math.min(n, i);
-  return data;
-}
-
 function bars(svg) {
   let bar = svg.append("g").attr("fill-opacity", 0.6).selectAll("rect");
 
-  x = d3.scaleLinear([0, 30], [MARGIN.left, WIDTH - MARGIN.right]);
-
-  let barSize = 48;
-
-  y = d3
-    .scaleBand()
-    .domain(d3.range(n + 1))
-    .rangeRound([MARGIN.top, MARGIN.top + barSize * (n + 1 + 0.1)])
-    .padding(0.1);
-
-  return ([date, data], transition) => {
-    x = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => +d["Weeks on Chart"])])
-      .range([MARGIN.left, WIDTH - MARGIN.right]);
-    return (bar = bar
+  return ([date, data], transition) =>
+    (bar = bar
       .data(data.slice(0, n), (d) => d["SongID"])
       .join(
         (enter) =>
@@ -471,11 +401,26 @@ function bars(svg) {
             .attr("height", y.bandwidth())
             .attr("x", x(0))
             .attr("y", (d) => y((prev.get(d) || d).rank))
-            .attr("width", (d) => {
-              // console.log(`entering:`);
-              // console.dir(d);
-              //console.log(prev.get(d));
-              return x((prev.get(d) || d)["Weeks on Chart"]) - x(0);
+            .attr(
+              "width",
+              (d) => x((prev.get(d) || d)["Weeks on Chart"]) - x(0)
+            )
+            .on("mouseover", function (event, d) {
+              d3.select(this)
+                .transition()
+                .duration("50")
+                .attr("opacity", ".85");
+
+              tooltip.transition().duration(50).style("opacity", 0.85);
+              console.log(event, d, this);
+              tooltip
+                .html(d["SongID"])
+                .style("left", event.pageX + 10 + "px")
+                .style("top", event.pageY - 15 + "px");
+            })
+            .on("mouseout", function (d, i) {
+              d3.select(this).transition().duration("50").attr("opacity", "1");
+              tooltip.transition().duration("50").style("opacity", 0);
             }),
         (update) => update,
         (exit) =>
@@ -494,40 +439,40 @@ function bars(svg) {
           .attr("y", (d) => y(d.rank))
           .attr("width", (d) => x(d["Weeks on Chart"]) - x(0))
       ));
-  };
 }
 
-async function playOneFrame() {
+function playOneFrame() {
   for (const keyframe of keyframes.slice(index, index + 1)) {
     const transition = container
       .transition()
-      .duration(duration)
+      .duration(animationDelay)
       .ease(d3.easeLinear);
+
+    updateScales(keyframe);
 
     updateAxis(keyframe, transition);
     updateBars(keyframe, transition);
     updateLabels(keyframe, transition);
-    await transition.end();
   }
 }
 
 function getData() {
-  const data = d3
-    .csv(
-      "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
-    )
-    .then((data) => {
-      billboardData = data.slice(-20000);
-      billboardData = billboardData.filter((d) => +d["Week Position"] <= 15);
-      console.log("done fetching data");
-      // updateData();
-      // updateConstants();
-      // createChart();
-      // updateAxis();
-      createSlider();
-      createPlayButton();
-      testNewMethod();
-    });
+  d3.csv(
+    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
+  ).then((allData) => {
+    data = allData.slice(-2000);
+    // data = data.filter((d) => +d["Week Position"] <= 50);
+    billboardData = data;
+    console.log("done fetching data");
+    initializeConstants();
+    createSlider();
+    createPlayButton();
+    initializeGenreFilters();
+    initializeSvg();
+    updateDataTranforms();
+    updateHTMLElements();
+    playOneFrame();
+  });
 }
 
 getData();
