@@ -1,5 +1,6 @@
 body {
     padding-left: 50px;
+    font-family: Sans-Serif;
 }
 
 .hidden {
@@ -15,6 +16,44 @@ body {
 }
 
 .viz {
-    margin: 4em 0 2em 0;
+    margin: 1em 0;
 }
 
+.control-bar {
+    display: flex;
+    margin: 1em 0;
+}
+
+.control-bar > div {
+    margin-right: 6em;
+}
+
+h3 {
+    margin: 0;
+}
+
+.row {
+    display: flex;
+}
+
+.inner-row {
+    display: flex;
+    align-items: center;
+}
+
+.column > div {
+    margin-bottom: 1em;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.top-right {
+    text-align: right;
+    margin: 0 4em;
+}
+
+h2 {
+    margin: 0.25em 0 0.25em 0;
+}

@@ -13,7 +13,8 @@
 // }
 
 // Code based on https://observablehq.com/@d3/bar-chart-race-explained
-
+const n = 10;
+const barSize = 36;
 let billboardData = new Array();
 let currentBillboardData = new Array();
 let container = null;
@@ -21,7 +22,7 @@ let xScale = null;
 let yScale = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
-const HEIGHT = 500;
+const HEIGHT = barSize * n;
 const MARGIN = {
   top: 10,
   right: 10,
@@ -36,7 +37,6 @@ let x = null;
 let y = null;
 
 let names = null;
-const n = 10;
 
 let animationDelay = 1000;
 const DELAY = 100;
@@ -53,7 +53,6 @@ let updateLabels = null;
 let updateAxis = null;
 
 let songIDtoMetaData = null;
-const barSize = 48;
 const animationSlider = document.querySelector("#animation-slider");
 const animationDelayP = document.querySelector("#animation-delay");
 const animationPlayButton = document.querySelector("#play");
@@ -73,7 +72,7 @@ let tooltip = null;
 function initializeConstants() {
   y = d3
     .scaleBand()
-    .domain(d3.range(n + 1))
+    .domain(d3.range(1, n + 2))
     .rangeRound([MARGIN.top, MARGIN.top + barSize * (n + 1 + 0.1)])
     .padding(0.1);
 
@@ -82,34 +81,6 @@ function initializeConstants() {
     .domain(currentBillboardData.map((d) => d["SongID"]));
 
   tooltip = d3.select(".tooltip");
-}
-
-function updateAxisOld() {
-  container
-    .append("g")
-    .attr("transform", `translate(0, ${HEIGHT - MARGIN.bottom})`)
-    .call(d3.axisBottom(xMargin))
-    .append("text")
-    .attr("text-anchor", "end")
-    .attr("fill", "black")
-    .attr("font-size", "12px")
-    .attr("font-weight", "bold")
-    .attr("x", WIDTH - MARGIN.right)
-    .attr("y", 50)
-    .text("Weeks on Chart");
-
-  container
-    .append("g")
-    .attr("transform", `translate(${MARGIN.left}, 0)`)
-    .call(d3.axisLeft(yMargin))
-    .append("text")
-    .attr("transform", `translate(20, ${MARGIN.top}) rotate(-90)`)
-    .attr("y", -50)
-    .attr("text-anchor", "end")
-    .attr("fill", "black")
-    .attr("font-size", "12px")
-    .attr("font-weight", "bold")
-    .text("Position on Chart");
 }
 
 function createSlider() {
@@ -129,7 +100,7 @@ function createSlider() {
 
 function updateHTMLElements() {
   animationSlider.max = numberOfWeeks - 1;
-  dateP.innerHTML = indexToDate.get(index);
+  dateP.innerHTML = indexToDate.get(index).toDateString();
 }
 
 function createPlayButton() {
@@ -186,17 +157,14 @@ function initializeGenreFilters() {
 function initializeDateSelector() {
   dateToIndex.forEach((index, date) => {
     const optionElement = document.createElement("option");
-    optionElement.setAttribute("key", index);
-    optionElement.innerHTML = date;
+    optionElement.setAttribute("value", index);
+    optionElement.innerHTML = date.toDateString();
     dateSelector.appendChild(optionElement);
   });
 
   d3.select("#date-selection").on("change", function (d) {
-    console.log(d.target);
-    animationSlider.value = +animationSlider.value + 1;
-    console.log(
-      `incrementing the slider, new value is ${animationSlider.value}`
-    );
+    animationSlider.value = this.value;
+    console.log(`selecting new date, new index is ${this.index}`);
     const event = new Event("input");
     animationSlider.dispatchEvent(event);
   });
@@ -301,7 +269,7 @@ function getRankAndMeta(a) {
   });
   data.sort((a, b) => d3.ascending(a["Week Position"], b["Week Position"]));
   data.forEach((d, i) => {
-    d.rank = Math.min(i, n);
+    d.rank = Math.min(i, n) + 1;
   });
   return data;
 }
@@ -321,30 +289,26 @@ function initializeSvg() {
 }
 
 function initializeAxesLabels() {
-  // container
-  //   .append("g")
-  //   .attr("transform", `translate(0, ${HEIGHT - MARGIN.bottom})`)
-  //   .call(d3.axisBottom(x))
   container
     .append("text")
-    .attr("text-anchor", "end")
+    .call(d3.axisTop(x))
     .attr("fill", "black")
-    .attr("font-size", "12px")
+    .attr("font-size", "16px")
     .attr("font-weight", "bold")
-    .attr("x", 100)
+    .attr("x", WIDTH / 2)
     .attr("y", -20)
-    .text("Weeks on Chart");
+    .text("Weeks on Top 100 Chart");
 
   container
     .append("g")
     .attr("transform", `translate(${MARGIN.left}, 0)`)
     .call(d3.axisLeft(y))
     .append("text")
-    .attr("transform", `translate(20, ${MARGIN.top}) rotate(-90)`)
+    .attr("transform", `translate(20, ${HEIGHT / 2.75}) rotate(-90)`)
     .attr("y", -50)
     .attr("text-anchor", "end")
     .attr("fill", "black")
-    .attr("font-size", "12px")
+    .attr("font-size", "16px")
     .attr("font-weight", "bold")
     .text("Rank on Chart");
 }
@@ -374,11 +338,7 @@ function axis(svg) {
 }
 
 function labels(svg) {
-  let label = svg
-    .append("g")
-    .style("font", "bold 12px var(--sans-serif)")
-    .style("font-variant-numeric", "tabular-nums")
-    .selectAll("text");
+  let label = svg.append("g").selectAll("text");
 
   function textTween(a, b) {
     const i = d3.interpolateNumber(a, b);
@@ -403,17 +363,17 @@ function labels(svg) {
             )
             .attr("y", y.bandwidth() / 2)
             .attr("x", WIDTH)
-            .attr("dy", "-0.25em")
+            .attr("dy", "0.25em")
             //.text((d) => d["SongID"])
-            .text((d) => d["Song"] + " - " + d["Performer"])
-            .call((text) =>
-              text
-                .append("tspan")
-                .attr("fill-opacity", 0.7)
-                .attr("font-weight", "normal")
-                .attr("x", WIDTH)
-                .attr("dy", "1.15em")
-            ),
+            .text((d) => d["Song"] + " - " + d["Performer"]),
+        // .call((text) =>
+        //   text
+        //     .append("tspan")
+        //     .attr("fill-opacity", 0.7)
+        //     .attr("font-weight", "normal")
+        //     .attr("x", WIDTH)
+        //     .attr("dy", "1.15em")
+        // ),
         (update) => update,
         (exit) =>
           exit
@@ -423,31 +383,32 @@ function labels(svg) {
               "transform",
               (d) => `translate(0,${y((next.get(d) || d).rank)})`
             )
-            .call((g) =>
-              g
-                .select("tspan")
-                .tween("text", (d) =>
-                  textTween(
-                    d["Weeks on Chart"],
-                    (next.get(d) || d)["Weeks on Chart"]
-                  )
-                )
-            )
+        // .call((g) =>
+        //   g
+        //     .select("tspan")
+        //     .tween("text", (d) =>
+        //       textTween(
+        //         d["Weeks on Chart"],
+        //         (next.get(d) || d)["Weeks on Chart"]
+        //       )
+        //     )
+        // )
       )
-      .call((bar) =>
-        bar
-          .transition(transition)
-          .attr("transform", (d) => `translate(0,${y(d.rank)})`)
-          .call((g) =>
-            g
-              .select("tspan")
-              .tween("text", (d) =>
-                textTween(
-                  (prev.get(d) || d)["Weeks on Chart"],
-                  d["Weeks on Chart"]
-                )
-              )
-          )
+      .call(
+        (bar) =>
+          bar
+            .transition(transition)
+            .attr("transform", (d) => `translate(0,${y(d.rank)})`)
+        // .call((g) =>
+        //   g
+        //     .select("tspan")
+        //     .tween("text", (d) =>
+        //       textTween(
+        //         (prev.get(d) || d)["Weeks on Chart"],
+        //         d["Weeks on Chart"]
+        //       )
+        //     )
+        // )
       ));
 }
 
@@ -478,7 +439,7 @@ function bars(svg) {
               tooltip.transition().duration(50).style("opacity", 0.85);
               console.log(event, d, this);
               tooltip
-                .html(d["SongID"])
+                .html(d["Song"])
                 .style("left", event.pageX + 10 + "px")
                 .style("top", event.pageY - 15 + "px");
             })
@@ -524,7 +485,7 @@ function getData() {
   d3.csv(
     "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
   ).then((allData) => {
-    data = allData.slice(-10000, -5000);
+    data = allData.slice(-15600, -5200);
     billboardData = data;
     console.log("done fetching data");
     initializeConstants();
