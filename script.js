@@ -18,11 +18,9 @@ const barSize = 36;
 let billboardData = new Array();
 let currentBillboardData = new Array();
 let container = null;
-let xScale = null;
-let yScale = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
-const HEIGHT = barSize * n;
+const HEIGHT = barSize * (n + 1);
 const MARGIN = {
   top: 10,
   right: 10,
@@ -260,6 +258,7 @@ function getRankAndMeta(a) {
           : +a.get(songID)["Week Position"],
       Performer: song["Performer"],
       Song: song["Song"],
+      Album: song["album"],
       //Genres: JSON.parse(song["Spotify Track ID"].trim().replace('"', "")),
       // Genres: JSON.parse(song["Spotify Track ID"]),
 
@@ -276,12 +275,11 @@ function getRankAndMeta(a) {
 
 function initializeSvg() {
   container = d3
-    .select("body")
+    .select(".container")
     .append("svg")
     .attr("class", "viz")
     .attr("width", WIDTH)
     .attr("height", HEIGHT)
-    .attr("overflow", "visible");
 
   updateBars = bars(container);
   updateLabels = labels(container);
@@ -439,7 +437,7 @@ function bars(svg) {
               tooltip.transition().duration(50).style("opacity", 0.85);
               console.log(event, d, this);
               tooltip
-                .html(d["Song"])
+                .html(`${d["Song"]}, Album: ${d["Album"]}`)
                 .style("left", event.pageX + 10 + "px")
                 .style("top", event.pageY - 15 + "px");
             })

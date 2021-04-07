@@ -17,6 +17,7 @@ body {
 
 .viz {
     margin: 1em 0;
+    overflow: visible;
 }
 
 .control-bar {
@@ -50,10 +51,23 @@ h3 {
 }
 
 .top-right {
-    text-align: right;
-    margin: 0 4em;
+    text-align: left;
+    margin-left: calc(50% + 1.5em);
+}
+
+#animation-slider {
+    width: 400px;
 }
 
 h2 {
     margin: 0.25em 0 0.25em 0;
+}
+
+.container {
+    display: block;
+}
+
+a {
+    display: block;
+    padding-top: 6em;
 }
