@@ -46,6 +46,8 @@ let next = null;
 let keyframes = new Array();
 let nameframes = null;
 let dateValues = null;
+let dateToIndex = null;
+let indexToDate = null;
 let updateBars = null;
 let updateLabels = null;
 let updateAxis = null;
@@ -56,7 +58,9 @@ const animationSlider = document.querySelector("#animation-slider");
 const animationDelayP = document.querySelector("#animation-delay");
 const animationPlayButton = document.querySelector("#play");
 const animationStopButton = document.querySelector("#stop");
+const dateP = document.querySelector("#date");
 const filterInputs = document.querySelectorAll(".filter");
+const dateSelector = document.querySelector("#date-selection");
 const genresSelected = new Set();
 
 let numberOfWeeks = 0;
@@ -77,11 +81,7 @@ function initializeConstants() {
     .scaleOrdinal(d3.schemeTableau10)
     .domain(currentBillboardData.map((d) => d["SongID"]));
 
-  tooltip = d3
-    .select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
+  tooltip = d3.select(".tooltip");
 }
 
 function updateAxisOld() {
@@ -116,6 +116,7 @@ function createSlider() {
   d3.select("#animation-slider").on("input", function (d) {
     index = +this.value;
     console.log(`index changed to ${index}`);
+    updateHTMLElements();
     playOneFrame();
   });
 
@@ -128,6 +129,7 @@ function createSlider() {
 
 function updateHTMLElements() {
   animationSlider.max = numberOfWeeks - 1;
+  dateP.innerHTML = indexToDate.get(index);
 }
 
 function createPlayButton() {
@@ -181,6 +183,25 @@ function initializeGenreFilters() {
   });
 }
 
+function initializeDateSelector() {
+  dateToIndex.forEach((index, date) => {
+    const optionElement = document.createElement("option");
+    optionElement.setAttribute("key", index);
+    optionElement.innerHTML = date;
+    dateSelector.appendChild(optionElement);
+  });
+
+  d3.select("#date-selection").on("change", function (d) {
+    console.log(d.target);
+    animationSlider.value = +animationSlider.value + 1;
+    console.log(
+      `incrementing the slider, new value is ${animationSlider.value}`
+    );
+    const event = new Event("input");
+    animationSlider.dispatchEvent(event);
+  });
+}
+
 function filterData() {
   billboardData = data.filter((d) => {
     if (genresSelected.size > 0) {
@@ -220,6 +241,14 @@ function updateDataTranforms() {
 
   console.log("Getting date values:");
   console.log(dateValues);
+
+  dateToIndex = new Map(dateValues.map(([ka, _], i) => [new Date(ka), i]));
+  indexToDate = new Map(dateValues.map(([ka, _], i) => [i, new Date(ka)]));
+
+  console.log("Initializing dateToIndex:");
+  console.log(dateToIndex);
+  console.log("Initialziing indexToDate");
+  console.log(indexToDate);
 
   keyframes = [];
 
@@ -261,7 +290,11 @@ function getRankAndMeta(a) {
         a.get(songID) === undefined
           ? Number.MAX_VALUE
           : +a.get(songID)["Week Position"],
-      Perfomer: song["Performer"],
+      Performer: song["Performer"],
+      Song: song["Song"],
+      //Genres: JSON.parse(song["Spotify Track ID"].trim().replace('"', "")),
+      // Genres: JSON.parse(song["Spotify Track ID"]),
+
       "Weeks on Chart":
         a.get(songID) === undefined ? 0 : +a.get(songID)["Weeks on Chart"],
     };
@@ -277,6 +310,7 @@ function initializeSvg() {
   container = d3
     .select("body")
     .append("svg")
+    .attr("class", "viz")
     .attr("width", WIDTH)
     .attr("height", HEIGHT)
     .attr("overflow", "visible");
@@ -284,6 +318,35 @@ function initializeSvg() {
   updateBars = bars(container);
   updateLabels = labels(container);
   updateAxis = axis(container);
+}
+
+function initializeAxesLabels() {
+  // container
+  //   .append("g")
+  //   .attr("transform", `translate(0, ${HEIGHT - MARGIN.bottom})`)
+  //   .call(d3.axisBottom(x))
+  container
+    .append("text")
+    .attr("text-anchor", "end")
+    .attr("fill", "black")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold")
+    .attr("x", 100)
+    .attr("y", -20)
+    .text("Weeks on Chart");
+
+  container
+    .append("g")
+    .attr("transform", `translate(${MARGIN.left}, 0)`)
+    .call(d3.axisLeft(y))
+    .append("text")
+    .attr("transform", `translate(20, ${MARGIN.top}) rotate(-90)`)
+    .attr("y", -50)
+    .attr("text-anchor", "end")
+    .attr("fill", "black")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold")
+    .text("Rank on Chart");
 }
 
 function updateScales([_, data]) {
@@ -315,12 +378,12 @@ function labels(svg) {
     .append("g")
     .style("font", "bold 12px var(--sans-serif)")
     .style("font-variant-numeric", "tabular-nums")
-    .attr("text-anchor", "end")
     .selectAll("text");
 
   function textTween(a, b) {
     const i = d3.interpolateNumber(a, b);
     return function (t) {
+      //this.textContent = "Weeks on Chart: " + formatNumber(i(t));
       this.textContent = formatNumber(i(t));
     };
   }
@@ -341,7 +404,8 @@ function labels(svg) {
             .attr("y", y.bandwidth() / 2)
             .attr("x", WIDTH)
             .attr("dy", "-0.25em")
-            .text((d) => d["SongID"])
+            //.text((d) => d["SongID"])
+            .text((d) => d["Song"] + " - " + d["Performer"])
             .call((text) =>
               text
                 .append("tspan")
@@ -460,8 +524,7 @@ function getData() {
   d3.csv(
     "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
   ).then((allData) => {
-    data = allData.slice(-2000);
-    // data = data.filter((d) => +d["Week Position"] <= 50);
+    data = allData.slice(-10000, -5000);
     billboardData = data;
     console.log("done fetching data");
     initializeConstants();
@@ -470,8 +533,10 @@ function getData() {
     initializeGenreFilters();
     initializeSvg();
     updateDataTranforms();
+    initializeDateSelector();
     updateHTMLElements();
     playOneFrame();
+    initializeAxesLabels();
   });
 }
 

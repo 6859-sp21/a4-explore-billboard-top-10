@@ -127,7 +127,7 @@ def add_genre_booleans():
         isPopColumn.append('pop' in '\t'.join(genreSet))
         isRapColumn.append('rap' in '\t'.join(genreSet))
         isCountryColumn.append('country' in '\t'.join(genreSet))
-        isRandBColumn.append('r&b' in '\t'.join(genreSet))
+  join(genreSet))
         isHipHopColumn.append('hip hop' in '\t'.join(genreSet))
 
     billboardData.insert(billboardData.shape[1], 'isPop', isPopColumn, allow_duplicates=True)
