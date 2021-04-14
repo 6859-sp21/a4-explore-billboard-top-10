@@ -14,13 +14,20 @@
 
 <div class="control-bar">
 <div class="column">
+  <div class="row">
+    <button id="play">Play</button>
+    <button id="stop" disabled>Stop</button>
+  </div>
   <div class="row"> 
-    <h3>Animation</h3>
-    <div class="inner-row">
+    <div id="slider-container">
       <input type="range" name="slider" id="animation-slider" min="0" max="10" value="0">
-      <button id="play">Play</button>
-      <button id="stop" disabled>Stop</button>
+      <ol id="labels"></ol>
     </div>
+  </div>
+  <div class="row">
+    <button id="previous">Previous</button>
+    <p>Current Week: <span id="date"></span></p>
+    <button id="next">Next</button>
   </div>
   <div class="row">
     <h3>Animation Delay</h3>
@@ -29,16 +36,12 @@
       <p class="no-margin"><span id="animation-delay">500</span>ms</p>
     </div>
   </div>
-</div>
-
-
-<div class="column">
-  <div class="inner-row">
+  <div class="row">
     <h3>Select Date:</h3>
     <select name="date-selection" id="date-selection"></select>
   </div>
   <div>
-  <div class="inner-row">
+  <div class="row">
     <h3>Genre Filters:</h3>
     <div>
       <label>
@@ -66,10 +69,6 @@
 </div>
 </div>
 
-</div>
-
-<div class="top-right">
-   <p>Current Week: <span id="date"></span></p>
 </div>
 
 
