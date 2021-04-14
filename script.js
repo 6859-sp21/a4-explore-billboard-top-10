@@ -15,6 +15,7 @@
 // Code based on https://observablehq.com/@d3/bar-chart-race-explained
 const n = 10;
 const barSize = 36;
+const animationLabelCount = 4;
 let billboardData = new Array();
 let currentBillboardData = new Array();
 let container = null;
@@ -37,7 +38,7 @@ let y = null;
 let names = null;
 
 let animationDelay = 1000;
-const DELAY = 400;
+const DELAY = 500;
 let prev = null;
 let next = null;
 
@@ -45,6 +46,7 @@ let keyframes = new Array();
 let nameframes = null;
 let dateValues = null;
 let dateToIndex = null;
+let dates = null;
 let indexToDate = null;
 let updateBars = null;
 let updateLabels = null;
@@ -55,10 +57,15 @@ const animationSlider = document.querySelector("#animation-slider");
 const animationDelayP = document.querySelector("#animation-delay");
 const animationPlayButton = document.querySelector("#play");
 const animationStopButton = document.querySelector("#stop");
+const nextButton = document.querySelector("#next");
+const previousButton = document.querySelector("#previous");
 const dateP = document.querySelector("#date");
 const filterInputs = document.querySelectorAll(".filter");
 const dateSelector = document.querySelector("#date-selection");
+const labelsElement = document.querySelector("#labels");
 const genresSelected = new Set();
+const sliderLabels = new Array();
+const tooltipElement = document.querySelector(".tooltip");
 
 let numberOfWeeks = 0;
 let data = [];
@@ -71,7 +78,7 @@ function initializeConstants() {
   y = d3
     .scaleBand()
     .domain(d3.range(1, n + 2))
-    .rangeRound([MARGIN.top, MARGIN.top + barSize * (n + 1 + 0.1)])
+    .rangeRound([MARGIN.top, MARGIN.top + barSize * (n + 2)])
     .padding(0.1);
 
   colorScale = d3
@@ -99,6 +106,9 @@ function createSlider() {
 function updateHTMLElements() {
   animationSlider.max = numberOfWeeks - 1;
   dateP.innerHTML = indexToDate.get(index).toDateString();
+
+  nextButton.disabled = index === numberOfWeeks - 1;
+  previousButton.disabled = index === 0;
 }
 
 function createPlayButton() {
@@ -111,18 +121,21 @@ function createPlayButton() {
       );
       const event = new Event("input");
       animationSlider.dispatchEvent(event);
+      removeTooltips();
     } else {
       console.log("animation stopped");
       clearInterval(animation);
       animationSlider.value = 0;
       animationPlayButton.disabled = false;
       animationStopButton.disabled = true;
+      tooltipElement.hidden = false;
     }
   }
 
   d3.select("#play").on("click", () => {
     animationPlayButton.disabled = true;
     animationStopButton.disabled = false;
+    tooltipElement.hidden = true;
     animation = setInterval(incrementSlider, animationDelay + DELAY);
   });
 
@@ -130,6 +143,26 @@ function createPlayButton() {
     clearInterval(animation);
     animationPlayButton.disabled = false;
     animationStopButton.disabled = true;
+    tooltipElement.hidden = false;
+    updateTooltips();
+  });
+
+  d3.select("#previous").on("click", () => {
+    animationSlider.value = +animationSlider.value - 1;
+    console.log(
+      `incrementing the slider, new value is ${animationSlider.value}`
+    );
+    const event = new Event("input");
+    animationSlider.dispatchEvent(event);
+  });
+
+  d3.select("#next").on("click", () => {
+    animationSlider.value = +animationSlider.value + 1;
+    console.log(
+      `incrementing the slider, new value is ${animationSlider.value}`
+    );
+    const event = new Event("input");
+    animationSlider.dispatchEvent(event);
   });
 }
 
@@ -149,6 +182,7 @@ function initializeGenreFilters() {
     updateDataTranforms();
     updateHTMLElements();
     playOneFrame();
+    updateTooltips();
   });
 }
 
@@ -210,6 +244,7 @@ function updateDataTranforms() {
 
   dateToIndex = new Map(dateValues.map(([ka, _], i) => [new Date(ka), i]));
   indexToDate = new Map(dateValues.map(([ka, _], i) => [i, new Date(ka)]));
+  dates = dateValues.map(([ka, _]) => new Date(ka));
 
   console.log("Initializing dateToIndex:");
   console.log(dateToIndex);
@@ -279,7 +314,7 @@ function initializeSvg() {
     .append("svg")
     .attr("class", "viz")
     .attr("width", WIDTH)
-    .attr("height", HEIGHT)
+    .attr("height", HEIGHT);
 
   updateBars = bars(container);
   updateLabels = labels(container);
@@ -309,6 +344,16 @@ function initializeAxesLabels() {
     .attr("font-size", "16px")
     .attr("font-weight", "bold")
     .text("Rank on Chart");
+
+  const firstLabel = document.createElement("li");
+  const middleLabel = document.createElement("li");
+  const lastLabel = document.createElement("li");
+  firstLabel.innerHTML = dates[0].toDateString();
+  middleLabel.innerHTML = dates[Math.floor(dates.length / 2)].toDateString();
+  lastLabel.innerHTML = dates[dates.length - 1].toDateString();
+  labelsElement.appendChild(firstLabel);
+  labelsElement.appendChild(middleLabel);
+  labelsElement.appendChild(lastLabel);
 }
 
 function updateScales([_, data]) {
@@ -326,7 +371,7 @@ function axis(svg) {
       .axisTop(x)
       .ticks(WIDTH / 160)
       .tickSizeOuter(0)
-      .tickSizeInner(-48 * (n + y.padding()));
+      .tickSizeInner(-barSize * (n + y.padding()));
 
     g.transition(transition).call(axis);
     g.select(".tick:first-of-type text").remove();
@@ -357,11 +402,14 @@ function labels(svg) {
             .append("text")
             .attr(
               "transform",
-              (d) => `translate(0,${y((prev.get(d) || d).rank)})`
+              (d) =>
+                `translate(${x((prev.get(d) || d)["Weeks on Chart"])},${y(
+                  (prev.get(d) || d).rank
+                )})`
             )
             .attr("y", y.bandwidth() / 2)
-            .attr("x", WIDTH)
-            .attr("dy", "0.25em")
+            .attr("x", "0.25em")
+            .attr("dy", "0.275em")
             //.text((d) => d["SongID"])
             .text((d) => d["Song"] + " - " + d["Performer"]),
         // .call((text) =>
@@ -379,7 +427,10 @@ function labels(svg) {
             .remove()
             .attr(
               "transform",
-              (d) => `translate(0,${y((next.get(d) || d).rank)})`
+              (d) =>
+                `translate(${x((next.get(d) || d)["Weeks on Chart"])},${y(
+                  (next.get(d) || d).rank
+                )})`
             )
         // .call((g) =>
         //   g
@@ -396,7 +447,10 @@ function labels(svg) {
         (bar) =>
           bar
             .transition(transition)
-            .attr("transform", (d) => `translate(0,${y(d.rank)})`)
+            .attr(
+              "transform",
+              (d) => `translate(${x(d["Weeks on Chart"])},${y(d.rank)})`
+            )
         // .call((g) =>
         //   g
         //     .select("tspan")
@@ -427,24 +481,23 @@ function bars(svg) {
             .attr(
               "width",
               (d) => x((prev.get(d) || d)["Weeks on Chart"]) - x(0)
-            )
-            .on("mouseover", function (event, d) {
-              d3.select(this)
-                .transition()
-                .duration("50")
-                .attr("opacity", ".85");
+            ),
+        // .on("mouseover", function (event, d) {
+        //   d3.select(this)
+        //     .transition()
+        //     .duration("50")
+        //     .attr("opacity", ".85");
 
-              tooltip.transition().duration(50).style("opacity", 0.85);
-              console.log(event, d, this);
-              tooltip
-                .html(`${d["Song"]}, Album: ${d["Album"]}`)
-                .style("left", event.pageX + 10 + "px")
-                .style("top", event.pageY - 15 + "px");
-            })
-            .on("mouseout", function (d, i) {
-              d3.select(this).transition().duration("50").attr("opacity", "1");
-              tooltip.transition().duration("50").style("opacity", 0);
-            }),
+        //   tooltip.transition().duration(50).style("opacity", 0.85);
+        //   tooltip
+        //     .html(`${d["Song"]}, Album: ${d["Album"]}`)
+        //     .style("left", event.pageX + 10 + "px")
+        //     .style("top", event.pageY - 15 + "px");
+        // })
+        // .on("mouseout", function (d, i) {
+        //   d3.select(this).transition().duration("50").attr("opacity", "1");
+        //   tooltip.transition().duration("50").style("opacity", 0);
+        // }),
         (update) => update,
         (exit) =>
           exit
@@ -479,6 +532,27 @@ function playOneFrame() {
   }
 }
 
+function updateTooltips() {
+  d3.selectAll("rect")
+    .on("mouseover", function (event, d) {
+      d3.select(this).transition().duration("50").attr("opacity", ".85");
+
+      tooltip.transition().duration(50).style("opacity", 0.85);
+      tooltip
+        .html(`${d["Song"]}, Album: ${d["Album"]}`)
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY - 15 + "px");
+    })
+    .on("mouseout", function (d, i) {
+      d3.select(this).transition().duration("50").attr("opacity", "1");
+      tooltip.transition().duration("50").style("opacity", 0);
+    });
+}
+
+function removeTooltips() {
+  d3.selectAll("rect").on("mouseover", null).on("mouseout", null);
+}
+
 function getData() {
   d3.csv(
     "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
@@ -496,6 +570,7 @@ function getData() {
     updateHTMLElements();
     playOneFrame();
     initializeAxesLabels();
+    updateTooltips();
   });
 }
 
