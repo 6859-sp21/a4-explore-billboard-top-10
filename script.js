@@ -37,7 +37,7 @@ let y = null;
 let names = null;
 
 let animationDelay = 1000;
-const DELAY = 100;
+const DELAY = 400;
 let prev = null;
 let next = null;
 
