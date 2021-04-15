@@ -295,6 +295,10 @@ function getRankAndMeta(a) {
       Performer: song["Performer"],
       Song: song["Song"],
       Album: song["album"],
+      "Preview URL": song["Preview URL"],
+      "Album Image URL": song["Album Image URL"],
+      "Spotify Genre List": song["Spotify Genre List"],
+
       //Genres: JSON.parse(song["Spotify Track ID"].trim().replace('"', "")),
       // Genres: JSON.parse(song["Spotify Track ID"]),
 
