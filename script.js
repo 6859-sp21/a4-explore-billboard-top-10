@@ -521,15 +521,20 @@ function playOneFrame() {
 function updateBarsOnClick() {
   d3.selectAll("rect")
     .on("mouseover", function (event, d) {
-      d3.select(this).transition().duration("50").attr("opacity", ".85");
+      d3.select(this).transition().duration("50").attr("opacity", ".95");
 
-      tooltip.transition().duration(50).style("opacity", 0.85);
-      const tooltipString = `${d["Song"]}, Album: ${d["Album"]}\ ${d["Spotify Genre List"]}`
+      tooltip.transition().duration(50).style("opacity", .95);
+      const img = `<img class="tooltip-image" src="${d["Album Image URL"]}"/>`;
+      const tooltipString = `<div class="tooltip-container">${img} 
+      <div><p>${d["Song"]}</p>
+      <p>Artist: ${d["Performer"]}</p>
+      <p>Album: ${d["Album"]}</p>
+      <p>Genres: ${d["Spotify Genre List"]}</p>
+      <p>Click to play preview</p></div></div>`;
       tooltip
         .html(tooltipString)
         .style("left", event.pageX + 10 + "px")
-        .style("top", event.pageY - 15 + "px");
-      //tooltip.html(`${d["Spotify Genre List"]}`)
+        .style("top", event.pageY - 30 + "px");
     })
     .on("mouseout", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
