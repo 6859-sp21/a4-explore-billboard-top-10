@@ -21,7 +21,7 @@ let currentBillboardData = new Array();
 let container = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
-const HEIGHT = barSize * (n + 1);
+const HEIGHT = barSize * (n + 1 - 0.2);
 const MARGIN = {
   top: 10,
   right: 10,
@@ -325,6 +325,7 @@ function initializeSvg() {
 function initializeAxesLabels() {
   container
     .append("text")
+    .style("font-size", "16px")
     .call(d3.axisTop(x))
     .attr("fill", "black")
     .attr("font-size", "16px")
@@ -336,6 +337,7 @@ function initializeAxesLabels() {
   container
     .append("g")
     .attr("transform", `translate(${MARGIN.left}, 0)`)
+    .style("font-size", "14px")
     .call(d3.axisLeft(y))
     .append("text")
     .attr("transform", `translate(20, ${HEIGHT / 2.75}) rotate(-90)`)
@@ -367,7 +369,10 @@ function updateScales([_, data]) {
 }
 
 function axis(svg) {
-  const g = svg.append("g").attr("transform", `translate(0,${MARGIN.top})`);
+  const g = svg
+    .append("g")
+    .attr("transform", `translate(0,${MARGIN.top})`)
+    .style("font-size", "14px");
 
   return (_, transition) => {
     const axis = d3
