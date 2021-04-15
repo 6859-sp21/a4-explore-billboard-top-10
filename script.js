@@ -66,6 +66,8 @@ const labelsElement = document.querySelector("#labels");
 const genresSelected = new Set();
 const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
+const imgElement = document.querySelector("img");
+const playerElement = document.querySelector("source");
 
 let numberOfWeeks = 0;
 let data = [];
@@ -527,11 +529,18 @@ function updateTooltips() {
     .on("mouseout", function (d, i) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
       tooltip.transition().duration("50").style("opacity", 0);
+    })
+    .on("click", function (d, i) {
+      imgElement.src = d["Preview URL"];
+      playerElement.src = d["Image Album URL"];
     });
 }
 
 function removeTooltips() {
-  d3.selectAll("rect").on("mouseover", null).on("mouseout", null);
+  d3.selectAll("rect")
+    .on("mouseover", null)
+    .on("mouseout", null)
+    .on("click", null);
 }
 
 function getData() {
