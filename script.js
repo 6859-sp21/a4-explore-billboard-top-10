@@ -38,7 +38,7 @@ let y = null;
 let names = null;
 
 let animationDelay = 1000;
-const DELAY = 500;
+const DELAY = 750;
 let prev = null;
 let next = null;
 
@@ -66,6 +66,7 @@ const labelsElement = document.querySelector("#labels");
 const genresSelected = new Set();
 const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
+
 
 let numberOfWeeks = 0;
 let data = [];
@@ -186,21 +187,21 @@ function initializeGenreFilters() {
   });
 }
 
-function initializeDateSelector() {
-  dateToIndex.forEach((index, date) => {
-    const optionElement = document.createElement("option");
-    optionElement.setAttribute("value", index);
-    optionElement.innerHTML = date.toDateString();
-    dateSelector.appendChild(optionElement);
-  });
+// function initializeDateSelector() {
+//   dateToIndex.forEach((index, date) => {
+//     const optionElement = document.createElement("option");
+//     optionElement.setAttribute("value", index);
+//     optionElement.innerHTML = date.toDateString();
+//     dateSelector.appendChild(optionElement);
+//   });
 
-  d3.select("#date-selection").on("change", function (d) {
-    animationSlider.value = this.value;
-    console.log(`selecting new date, new index is ${this.index}`);
-    const event = new Event("input");
-    animationSlider.dispatchEvent(event);
-  });
-}
+//   d3.select("#date-selection").on("change", function (d) {
+//     animationSlider.value = this.value;
+//     console.log(`selecting new date, new index is ${this.index}`);
+//     const event = new Event("input");
+//     animationSlider.dispatchEvent(event);
+//   });
+// }
 
 function filterData() {
   billboardData = data.filter((d) => {
@@ -345,12 +346,14 @@ function initializeAxesLabels() {
     .attr("font-weight", "bold")
     .text("Rank on Chart");
 
+  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
   const firstLabel = document.createElement("li");
   const middleLabel = document.createElement("li");
   const lastLabel = document.createElement("li");
-  firstLabel.innerHTML = dates[0].toDateString();
-  middleLabel.innerHTML = dates[Math.floor(dates.length / 2)].toDateString();
-  lastLabel.innerHTML = dates[dates.length - 1].toDateString();
+  firstLabel.innerHTML = months[dates[0].getMonth()] + " " + dates[0].getFullYear(); 
+  middleLabel.innerHTML = months[dates[Math.floor(dates.length / 2)].getMonth()] + " " + dates[Math.floor(dates.length / 2)].getFullYear(); 
+  lastLabel.innerHTML = months[dates[dates.length - 1].getMonth()] + " " + dates[dates.length - 1].getFullYear();
   labelsElement.appendChild(firstLabel);
   labelsElement.appendChild(middleLabel);
   labelsElement.appendChild(lastLabel);
@@ -566,7 +569,7 @@ function getData() {
     initializeGenreFilters();
     initializeSvg();
     updateDataTranforms();
-    initializeDateSelector();
+    //initializeDateSelector();
     updateHTMLElements();
     playOneFrame();
     initializeAxesLabels();
