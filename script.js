@@ -535,7 +535,7 @@ function removeTooltips() {
 
 function getData() {
   d3.csv(
-    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
+    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Spotify%20Features%20Added.csv"
   ).then((allData) => {
     data = allData.slice(-15600, -5200);
     billboardData = data;
