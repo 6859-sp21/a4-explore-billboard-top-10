@@ -67,7 +67,6 @@ const genresSelected = new Set();
 const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
 
-
 let numberOfWeeks = 0;
 let data = [];
 
@@ -348,14 +347,34 @@ function initializeAxesLabels() {
     .attr("font-weight", "bold")
     .text("Rank on Chart");
 
-  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  var months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   const firstLabel = document.createElement("li");
   const middleLabel = document.createElement("li");
   const lastLabel = document.createElement("li");
-  firstLabel.innerHTML = months[dates[0].getMonth()] + " " + dates[0].getFullYear(); 
-  middleLabel.innerHTML = months[dates[Math.floor(dates.length / 2)].getMonth()] + " " + dates[Math.floor(dates.length / 2)].getFullYear(); 
-  lastLabel.innerHTML = months[dates[dates.length - 1].getMonth()] + " " + dates[dates.length - 1].getFullYear();
+  firstLabel.innerHTML =
+    months[dates[0].getMonth()] + " " + dates[0].getFullYear();
+  middleLabel.innerHTML =
+    months[dates[Math.floor(dates.length / 2)].getMonth()] +
+    " " +
+    dates[Math.floor(dates.length / 2)].getFullYear();
+  lastLabel.innerHTML =
+    months[dates[dates.length - 1].getMonth()] +
+    " " +
+    dates[dates.length - 1].getFullYear();
   labelsElement.appendChild(firstLabel);
   labelsElement.appendChild(middleLabel);
   labelsElement.appendChild(lastLabel);
@@ -394,7 +413,6 @@ function labels(svg) {
   function textTween(a, b) {
     const i = d3.interpolateNumber(a, b);
     return function (t) {
-      //this.textContent = "Weeks on Chart: " + formatNumber(i(t));
       this.textContent = formatNumber(i(t));
     };
   }
@@ -418,16 +436,7 @@ function labels(svg) {
             .attr("y", y.bandwidth() / 2)
             .attr("x", "0.25em")
             .attr("dy", "0.275em")
-            //.text((d) => d["SongID"])
             .text((d) => d["Song"] + " - " + d["Performer"]),
-        // .call((text) =>
-        //   text
-        //     .append("tspan")
-        //     .attr("fill-opacity", 0.7)
-        //     .attr("font-weight", "normal")
-        //     .attr("x", WIDTH)
-        //     .attr("dy", "1.15em")
-        // ),
         (update) => update,
         (exit) =>
           exit
@@ -440,35 +449,14 @@ function labels(svg) {
                   (next.get(d) || d).rank
                 )})`
             )
-        // .call((g) =>
-        //   g
-        //     .select("tspan")
-        //     .tween("text", (d) =>
-        //       textTween(
-        //         d["Weeks on Chart"],
-        //         (next.get(d) || d)["Weeks on Chart"]
-        //       )
-        //     )
-        // )
       )
-      .call(
-        (bar) =>
-          bar
-            .transition(transition)
-            .attr(
-              "transform",
-              (d) => `translate(${x(d["Weeks on Chart"])},${y(d.rank)})`
-            )
-        // .call((g) =>
-        //   g
-        //     .select("tspan")
-        //     .tween("text", (d) =>
-        //       textTween(
-        //         (prev.get(d) || d)["Weeks on Chart"],
-        //         d["Weeks on Chart"]
-        //       )
-        //     )
-        // )
+      .call((bar) =>
+        bar
+          .transition(transition)
+          .attr(
+            "transform",
+            (d) => `translate(${x(d["Weeks on Chart"])},${y(d.rank)})`
+          )
       ));
 }
 
@@ -490,22 +478,6 @@ function bars(svg) {
               "width",
               (d) => x((prev.get(d) || d)["Weeks on Chart"]) - x(0)
             ),
-        // .on("mouseover", function (event, d) {
-        //   d3.select(this)
-        //     .transition()
-        //     .duration("50")
-        //     .attr("opacity", ".85");
-
-        //   tooltip.transition().duration(50).style("opacity", 0.85);
-        //   tooltip
-        //     .html(`${d["Song"]}, Album: ${d["Album"]}`)
-        //     .style("left", event.pageX + 10 + "px")
-        //     .style("top", event.pageY - 15 + "px");
-        // })
-        // .on("mouseout", function (d, i) {
-        //   d3.select(this).transition().duration("50").attr("opacity", "1");
-        //   tooltip.transition().duration("50").style("opacity", 0);
-        // }),
         (update) => update,
         (exit) =>
           exit
