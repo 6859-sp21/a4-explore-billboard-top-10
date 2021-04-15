@@ -2,7 +2,9 @@
 
 <html>
   <head>
-  <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -15,8 +17,8 @@
 <div class="control-bar">
 <div class="column">
   <div class="row">
-    <button id="play">Play</button>
-    <button id="stop" disabled>Stop</button>
+    <div id="play-container"><span class="material-icons md-48" id="play">play_circle</span></div>
+    <div id="stop-container" hidden><span class="material-icons md-48" id="stop">stop</span></div>
   </div>
   <div class="row"> 
     <div id="slider-container">
