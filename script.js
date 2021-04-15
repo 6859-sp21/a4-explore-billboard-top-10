@@ -413,7 +413,7 @@ function axis(svg) {
       .axisTop(x)
       .ticks(WIDTH / 160)
       .tickSizeOuter(0)
-      .tickSizeInner(-barSize * (n + y.padding()));
+      .tickSizeInner(-barSize * (n+1));
 
     g.transition(transition).call(axis);
     g.select(".tick:first-of-type text").remove();
