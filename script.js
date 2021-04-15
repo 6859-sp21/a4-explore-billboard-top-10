@@ -66,6 +66,8 @@ const labelsElement = document.querySelector("#labels");
 const genresSelected = new Set();
 const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
+const imgElement = document.querySelector("img");
+const audioElement = document.querySelector("audio");
 
 let numberOfWeeks = 0;
 let data = [];
@@ -94,7 +96,7 @@ function createSlider() {
     console.log(`index changed to ${index}`);
     updateHTMLElements();
     playOneFrame();
-    updateTooltips();
+    updateBarsOnClick();
   });
 
   d3.select("#delay-slider").on("input", function (d) {
@@ -145,7 +147,7 @@ function createPlayButton() {
     animationPlayButton.disabled = false;
     animationStopButton.disabled = true;
     tooltipElement.hidden = false;
-    updateTooltips();
+    updateBarsOnClick();
   });
 
   d3.select("#previous").on("click", () => {
@@ -183,7 +185,8 @@ function initializeGenreFilters() {
     updateDataTranforms();
     updateHTMLElements();
     playOneFrame();
-    updateTooltips();
+    updateBarsOnClick();
+    initializeSongPlayer();
   });
 }
 
@@ -420,13 +423,6 @@ function axis(svg) {
 function labels(svg) {
   let label = svg.append("g").selectAll("text");
 
-  function textTween(a, b) {
-    const i = d3.interpolateNumber(a, b);
-    return function (t) {
-      this.textContent = formatNumber(i(t));
-    };
-  }
-
   formatNumber = d3.format(",d");
 
   return ([date, data], transition) =>
@@ -522,7 +518,7 @@ function playOneFrame() {
   }
 }
 
-function updateTooltips() {
+function updateBarsOnClick() {
   d3.selectAll("rect")
     .on("mouseover", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", ".85");
@@ -535,14 +531,31 @@ function updateTooltips() {
         .style("top", event.pageY - 15 + "px");
       //tooltip.html(`${d["Spotify Genre List"]}`)
     })
-    .on("mouseout", function (d, i) {
+    .on("mouseout", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
       tooltip.transition().duration("50").style("opacity", 0);
+    })
+    .on("click", function (event, d) {
+      console.log(`clicked on:`);
+      console.log(d);
+      imgElement.src = d["Album Image URL"];
+      audioElement.querySelector("source").src = d["Preview URL"];
+      audioElement.load();
     });
 }
 
 function removeTooltips() {
-  d3.selectAll("rect").on("mouseover", null).on("mouseout", null);
+  d3.selectAll("rect")
+    .on("mouseover", null)
+    .on("mouseout", null)
+    .on("click", null);
+}
+
+function initializeSongPlayer() {
+  const d = keyframes[0][1][0];
+  imgElement.src = d["Album Image URL"];
+  audioElement.querySelector("source").src = d["Preview URL"];
+  audioElement.load();
 }
 
 function getData() {
@@ -562,7 +575,8 @@ function getData() {
     updateHTMLElements();
     playOneFrame();
     initializeAxesLabels();
-    updateTooltips();
+    updateBarsOnClick();
+    initializeSongPlayer();
   });
 }
 
