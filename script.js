@@ -94,6 +94,7 @@ function createSlider() {
     console.log(`index changed to ${index}`);
     updateHTMLElements();
     playOneFrame();
+    updateTooltips();
   });
 
   d3.select("#delay-slider").on("input", function (d) {
