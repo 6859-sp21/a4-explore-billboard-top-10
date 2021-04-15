@@ -57,6 +57,8 @@ const animationSlider = document.querySelector("#animation-slider");
 const animationDelayP = document.querySelector("#animation-delay");
 const animationPlayButton = document.querySelector("#play");
 const animationStopButton = document.querySelector("#stop");
+const animationPlayContainer = document.querySelector("#play-container");
+const animationStopContainer = document.querySelector("#stop-container");
 const nextButton = document.querySelector("#next");
 const previousButton = document.querySelector("#previous");
 const dateP = document.querySelector("#date");
@@ -129,23 +131,23 @@ function createPlayButton() {
       console.log("animation stopped");
       clearInterval(animation);
       animationSlider.value = 0;
-      animationPlayButton.disabled = false;
-      animationStopButton.disabled = true;
+      animationPlayContainer.hidden = false;
+      animationStopContainer.hidden = true;
       tooltipElement.hidden = false;
     }
   }
 
   d3.select("#play").on("click", () => {
-    animationPlayButton.disabled = true;
-    animationStopButton.disabled = false;
+    animationPlayContainer.hidden = true;
+    animationStopContainer.hidden = false;
     tooltipElement.hidden = true;
     animation = setInterval(incrementSlider, animationDelay + DELAY);
   });
 
   d3.select("#stop").on("click", () => {
     clearInterval(animation);
-    animationPlayButton.disabled = false;
-    animationStopButton.disabled = true;
+    animationPlayContainer.hidden = false;
+    animationStopContainer.hidden = true;
     tooltipElement.hidden = false;
     updateBarsOnClick();
   });
@@ -301,7 +303,7 @@ function getRankAndMeta(a) {
       isPop: song["isPop"],
       isRap: song["isRap"],
       isCountry: song["isCountry"],
-      'isR&B': song["isR&B"],
+      "isR&B": song["isR&B"],
       isHipPop: song["isHipPop"],
       "Preview URL": song["Preview URL"],
       "Album Image URL": song["Album Image URL"],
@@ -523,7 +525,7 @@ function updateBarsOnClick() {
     .on("mouseover", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", ".95");
 
-      tooltip.transition().duration(50).style("opacity", .95);
+      tooltip.transition().duration(50).style("opacity", 0.95);
       const img = `<img class="tooltip-image" src="${d["Album Image URL"]}"/>`;
       const tooltipString = `<div class="tooltip-container">${img} 
       <div><p>${d["Song"]}</p>
