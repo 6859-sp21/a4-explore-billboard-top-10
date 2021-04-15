@@ -67,7 +67,7 @@ const genresSelected = new Set();
 const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
 const imgElement = document.querySelector("img");
-const playerElement = document.querySelector("source");
+const audioElement = document.querySelector("audio");
 
 let numberOfWeeks = 0;
 let data = [];
@@ -96,7 +96,7 @@ function createSlider() {
     console.log(`index changed to ${index}`);
     updateHTMLElements();
     playOneFrame();
-    updateTooltips();
+    updateBarsOnClick();
   });
 
   d3.select("#delay-slider").on("input", function (d) {
@@ -147,7 +147,7 @@ function createPlayButton() {
     animationPlayButton.disabled = false;
     animationStopButton.disabled = true;
     tooltipElement.hidden = false;
-    updateTooltips();
+    updateBarsOnClick();
   });
 
   d3.select("#previous").on("click", () => {
@@ -185,7 +185,8 @@ function initializeGenreFilters() {
     updateDataTranforms();
     updateHTMLElements();
     playOneFrame();
-    updateTooltips();
+    updateBarsOnClick();
+    initializeSongPlayer();
   });
 }
 
@@ -297,6 +298,10 @@ function getRankAndMeta(a) {
       Performer: song["Performer"],
       Song: song["Song"],
       Album: song["album"],
+      "Preview URL": song["Preview URL"],
+      "Album Image URL": song["Album Image URL"],
+      "Spotify Genre List": song["Spotify Genre List"],
+
       //Genres: JSON.parse(song["Spotify Track ID"].trim().replace('"', "")),
       // Genres: JSON.parse(song["Spotify Track ID"]),
 
@@ -413,13 +418,6 @@ function axis(svg) {
 function labels(svg) {
   let label = svg.append("g").selectAll("text");
 
-  function textTween(a, b) {
-    const i = d3.interpolateNumber(a, b);
-    return function (t) {
-      this.textContent = formatNumber(i(t));
-    };
-  }
-
   formatNumber = d3.format(",d");
 
   return ([date, data], transition) =>
@@ -515,7 +513,7 @@ function playOneFrame() {
   }
 }
 
-function updateTooltips() {
+function updateBarsOnClick() {
   d3.selectAll("rect")
     .on("mouseover", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", ".85");
@@ -526,13 +524,16 @@ function updateTooltips() {
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 15 + "px");
     })
-    .on("mouseout", function (d, i) {
+    .on("mouseout", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
       tooltip.transition().duration("50").style("opacity", 0);
     })
-    .on("click", function (d, i) {
-      imgElement.src = d["Preview URL"];
-      playerElement.src = d["Image Album URL"];
+    .on("click", function (event, d) {
+      console.log(`clicked on:`);
+      console.log(d);
+      imgElement.src = d["Album Image URL"];
+      audioElement.querySelector("source").src = d["Preview URL"];
+      audioElement.load();
     });
 }
 
@@ -543,9 +544,16 @@ function removeTooltips() {
     .on("click", null);
 }
 
+function initializeSongPlayer() {
+  const d = keyframes[0][1][0];
+  imgElement.src = d["Album Image URL"];
+  audioElement.querySelector("source").src = d["Preview URL"];
+  audioElement.load();
+}
+
 function getData() {
   d3.csv(
-    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Missing%20Weeks%20Added.csv"
+    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Spotify%20Features%20Added.csv"
   ).then((allData) => {
     data = allData.slice(-15600, -5200);
     billboardData = data;
@@ -560,7 +568,8 @@ function getData() {
     updateHTMLElements();
     playOneFrame();
     initializeAxesLabels();
-    updateTooltips();
+    updateBarsOnClick();
+    initializeSongPlayer();
   });
 }
 
