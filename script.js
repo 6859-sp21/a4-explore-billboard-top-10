@@ -298,6 +298,11 @@ function getRankAndMeta(a) {
       Performer: song["Performer"],
       Song: song["Song"],
       Album: song["album"],
+      isPop: song["isPop"],
+      isRap: song["isRap"],
+      isCountry: song["isCountry"],
+      'isR&B': song["isR&B"],
+      isHipPop: song["isHipPop"],
       "Preview URL": song["Preview URL"],
       "Album Image URL": song["Album Image URL"],
       "Spotify Genre List": song["Spotify Genre List"],
@@ -519,10 +524,12 @@ function updateBarsOnClick() {
       d3.select(this).transition().duration("50").attr("opacity", ".85");
 
       tooltip.transition().duration(50).style("opacity", 0.85);
+      const tooltipString = `${d["Song"]}, Album: ${d["Album"]}\ ${d["Spotify Genre List"]}`
       tooltip
-        .html(`${d["Song"]}, Album: ${d["Album"]}`)
+        .html(tooltipString)
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 15 + "px");
+      //tooltip.html(`${d["Spotify Genre List"]}`)
     })
     .on("mouseout", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
