@@ -212,7 +212,7 @@ function initializeGenreFilters() {
 function filterData() {
   billboardData = data.filter((d) => {
     if (genresSelected.size > 0) {
-      return Array.from(genresSelected).some((genre) => d[genre] === "True");
+      return Array.from(genresSelected).some((genre) => d[genre] === "TRUE");
     } else {
       return true;
     }
@@ -572,7 +572,7 @@ function getData() {
   d3.csv(
     "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Final%20Dataset.csv"
   ).then((allData) => {
-    data = allData.slice(-15600);
+    data = allData.slice(-15600, -5200);
     billboardData = data;
     console.log("done fetching data");
     initializeConstants();

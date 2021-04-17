@@ -100,7 +100,7 @@ a {
 }
 
 img {
-    width: 75%;
+    width: 65%;
     margin-bottom: 0em;
 }
 
@@ -110,7 +110,6 @@ img {
     align-items: center;
     justify-content: center;
     width: 25%;
-    margin-top: 2em;
 }
 
 .tooltip-image {
