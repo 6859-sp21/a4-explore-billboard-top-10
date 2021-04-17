@@ -212,7 +212,7 @@ function initializeGenreFilters() {
 function filterData() {
   billboardData = data.filter((d) => {
     if (genresSelected.size > 0) {
-      return Array.from(genresSelected).some((genre) => d[genre] === "True");
+      return Array.from(genresSelected).some((genre) => d[genre] === "TRUE");
     } else {
       return true;
     }
