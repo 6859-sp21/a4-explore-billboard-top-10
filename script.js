@@ -567,9 +567,9 @@ function initializeSongPlayer() {
 
 function getData() {
   d3.csv(
-    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Spotify%20Features%20Added.csv"
+    "https://raw.githubusercontent.com/6859-sp21/a4-explore-billboard-top-10/main/Hot%20Stuff%20Final%20Dataset.csv"
   ).then((allData) => {
-    data = allData.slice(-15600, -5200);
+    data = allData.slice(-15600);
     billboardData = data;
     console.log("done fetching data");
     initializeConstants();
