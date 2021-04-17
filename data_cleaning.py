@@ -6,7 +6,10 @@ originalDataFilePath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-1
 audioFeaturesAddedPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Spotify Features Added.csv"
 booleansAddedPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Genre Booleans Added.csv"
 missingWeeksAddedPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Missing Weeks Added.csv"
-
+testfilePath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\TestTargetFile.csv"
+HotStuffExistingSpotifyPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Spotify Features Added.csv"
+HotStuffMissingSpotifyPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Missing Spotify Data Added .csv"
+HotStuffFinalPath = r"C:\Users\victo\Desktop\6.859\a4-explore-billboard-top-10\Hot Stuff Final Dataset.csv"
 
 '''
 Creates dictionary mapping songIDs to the song's audio features
@@ -108,7 +111,7 @@ i.e. dance pop counts as pop
 Note that songs with missing Spotify Genre Lists will have false for all values
 '''
 def add_genre_booleans():
-    billboardData = pd.read_csv(audioFeaturesAddedPath)
+    billboardData = pd.read_csv(HotStuffMissingSpotifyPath)
 
     isPopColumn = []
     isRapColumn = []
@@ -120,6 +123,8 @@ def add_genre_booleans():
 
         #Get genreList in working format
         genreList = billboardData.iloc[i, billboardData.columns.get_loc("Spotify Genre List")]
+        if (type(genreList) == float): 
+            genreList = "[]"
         genreList = genreList.strip('][').split(',')
         genreSet = set([s.strip(' \'\"') for s in genreList])
         
@@ -127,8 +132,14 @@ def add_genre_booleans():
         isPopColumn.append('pop' in '\t'.join(genreSet))
         isRapColumn.append('rap' in '\t'.join(genreSet))
         isCountryColumn.append('country' in '\t'.join(genreSet))
-  join(genreSet))
+        isRandBColumn.append('R&B' in '\t'.join(genreSet))
         isHipHopColumn.append('hip hop' in '\t'.join(genreSet))
+
+    del billboardData['isPop']
+    del billboardData['isRap']
+    del billboardData['isCountry']
+    del billboardData['isR&B']
+    del billboardData['isHipPop']
 
     billboardData.insert(billboardData.shape[1], 'isPop', isPopColumn, allow_duplicates=True)
     billboardData.insert(billboardData.shape[1], 'isRap', isRapColumn, allow_duplicates=True)
@@ -136,8 +147,38 @@ def add_genre_booleans():
     billboardData.insert(billboardData.shape[1], 'isR&B', isRandBColumn, allow_duplicates=True)
     billboardData.insert(billboardData.shape[1], 'isHipPop', isHipHopColumn, allow_duplicates=True)
 
-    billboardData.to_csv(booleansAddedPath)
+    billboardData.to_csv(HotStuffFinalPath)
         
+
+'''
+Reformate the Spotify Genre List column such that the strings in each genre list does not have apostrophes
+And write to csv
+'''
+def reformat_genres(): 
+    billboardData = pd.read_csv(HotStuffFinalPath)
+
+    genreColumn = []
+    for i in range(billboardData.shape[0]):
+        if(i%5200 == 0): print(i)
+
+        #Get genreList in working format
+        genreList = billboardData.iloc[i, billboardData.columns.get_loc("Spotify Genre List")]
+
+        if (type(genreList) == float): 
+            genreList = []
+            genreColumn.append(genreList)
+            continue
+
+        genreList = genreList.strip('][').split(',')
+        genreSet = set([s.strip(' \'\"') for s in genreList])
+        genreColumn.append(list(genreSet))
+    
+    del billboardData['Spotify Genre List']
+    billboardData.insert(billboardData.shape[1], 'Spotify Genre List', genreColumn, allow_duplicates=True)
+
+    billboardData.to_csv(HotStuffFinalPath)
+
+
 '''
 For all weeks in 2020, calculate the weeks that each song has been on chart previously,
 and update the column accordingly
@@ -187,5 +228,6 @@ if __name__ == "__main__":
     #add_audio_features()
     #print(count_popular_genres()[0:15])
     #add_genre_booleans()
-    add_missing_weeks_on_chart()
+    #add_missing_weeks_on_chart()
+    reformat_genres()
     print("fin")
