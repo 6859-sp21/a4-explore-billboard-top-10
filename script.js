@@ -21,7 +21,7 @@ let currentBillboardData = new Array();
 let container = null;
 let colorScale = null;
 const WIDTH = window.innerWidth / 2;
-const HEIGHT = barSize * (n + 1 - 0.2);
+const HEIGHT = barSize * (n + 1 - 0.4);
 const MARGIN = {
   top: 10,
   right: 10,
