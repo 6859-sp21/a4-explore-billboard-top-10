@@ -1,5 +1,5 @@
 body {
-    font-family: Sans-Serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .hidden {
@@ -126,7 +126,7 @@ img {
     margin: 0 0.5em 0.5em 0;
 } 
 
-#play-container, #stop-container {
+#play-container, #stop-container, #next, #previous {
     cursor: pointer;
 }
 
