@@ -14,7 +14,7 @@
 
 // Code based on https://observablehq.com/@d3/bar-chart-race-explained
 const n = 10;
-const barSize = 36;
+const barSize = 32;
 const animationLabelCount = 4;
 let billboardData = new Array();
 let currentBillboardData = new Array();
