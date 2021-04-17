@@ -1,3 +1,4 @@
+from os import error
 import pandas as pd
 import numpy as np
 import spotipy
@@ -48,14 +49,28 @@ def add_missing_features(sp):
                 time.sleep(1)
                 previewURL = track['preview_url']
                 albumImage = track['album']['images'][0]['url']
+                albumName = track['album']['name']
 
                 #get album name from song, then search for it to get album id, then use that to find genre of album
-                albumName = track['album']['name']
-                searchedAlbum = sp.search(q = albumName + "," + performer, type = ['album', 'artist'], limit = 1, market = 'US')['albums']['items'][0]
-                time.sleep(1)
-                albumID = searchedAlbum['id']
+                albumID = mostPopularTrack['album']['id']
                 album = sp.album(albumID)
+                time.sleep(1)
                 genres = album['genres']
+
+
+
+                
+                # albumFirstString = albumName.split(" ", 1)[0]
+                # print(albumFirstString + " " + performerFirstName)
+
+
+
+
+                # searchedAlbum = sp.search(q = albumFirstString + "," + performerFirstName, type = ['album'], limit = 1, market = 'US')['albums']['items'][0]
+                # time.sleep(1)
+                # albumID = searchedAlbum['id']
+                # album = sp.album(albumID)
+                # genres = album['genres']
 
                 spotifyFeaturesDict[songID] = (albumName, spotifyID, genres, albumImage, previewURL)
 
