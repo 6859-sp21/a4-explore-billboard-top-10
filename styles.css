@@ -21,7 +21,7 @@ body {
 
 .control-bar {
     display: flex;
-    margin: 1em 0;
+    margin: 0;
 }
 
 h3 {
@@ -38,7 +38,7 @@ h3 {
 }
 
 .column > div {
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
 }
 
 .no-margin {
@@ -60,7 +60,7 @@ h2 {
 
 .container {
     display: flex;
-    margin: 2em;
+    margin: 0em 2em;
     overflow: hidden;
     padding-top: 2em;
     padding-left: 3em;
