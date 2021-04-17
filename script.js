@@ -14,7 +14,7 @@
 
 // Code based on https://observablehq.com/@d3/bar-chart-race-explained
 const n = 10;
-const barSize = 36;
+const barSize = 32;
 const animationLabelCount = 4;
 let billboardData = new Array();
 let currentBillboardData = new Array();
@@ -70,6 +70,7 @@ const sliderLabels = new Array();
 const tooltipElement = document.querySelector(".tooltip");
 const imgElement = document.querySelector("img");
 const audioElement = document.querySelector("audio");
+const songPlayingElement = document.querySelector("#song-playing");
 
 let numberOfWeeks = 0;
 let data = [];
@@ -546,6 +547,7 @@ function updateBarsOnClick() {
       console.log(`clicked on:`);
       console.log(d);
       imgElement.src = d["Album Image URL"];
+      songPlayingElement.innerHTML = `${d["Song"]} - ${d["Performer"]}`;
       audioElement.querySelector("source").src = d["Preview URL"];
       audioElement.load();
     });
@@ -561,6 +563,7 @@ function removeTooltips() {
 function initializeSongPlayer() {
   const d = keyframes[0][1][0];
   imgElement.src = d["Album Image URL"];
+  songPlayingElement.innerHTML = `${d["Song"]} - ${d["Performer"]}`;
   audioElement.querySelector("source").src = d["Preview URL"];
   audioElement.load();
 }

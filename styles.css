@@ -101,7 +101,7 @@ a {
 
 img {
     width: 75%;
-    margin-bottom: 2em;
+    margin-bottom: 0em;
 }
 
 .column-2 {
@@ -110,6 +110,7 @@ img {
     align-items: center;
     justify-content: center;
     width: 25%;
+    margin-top: 2em;
 }
 
 .tooltip-image {
@@ -128,6 +129,16 @@ img {
 
 #play-container, #stop-container, #next, #previous {
     cursor: pointer;
+}
+
+#song-playing {
+    text-align: center;
+}
+
+#song-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 
