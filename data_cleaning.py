@@ -227,7 +227,7 @@ def add_missing_weeks_on_chart():
 if __name__ == "__main__":
     #add_audio_features()
     #print(count_popular_genres()[0:15])
-    #add_genre_booleans()
+    add_genre_booleans()
     #add_missing_weeks_on_chart()
-    reformat_genres()
+    #reformat_genres()
     print("fin")
