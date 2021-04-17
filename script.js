@@ -20,7 +20,7 @@ let billboardData = new Array();
 let currentBillboardData = new Array();
 let container = null;
 let colorScale = null;
-const WIDTH = window.innerWidth / 2;
+const WIDTH = window.innerWidth / 2 - 100;
 const HEIGHT = barSize * (n + 1 - 0.4);
 const MARGIN = {
   top: 10,
@@ -333,8 +333,8 @@ function initializeSvg() {
     .attr("height", HEIGHT);
 
   updateBars = bars(container);
-  updateLabels = labels(container);
   updateAxis = axis(container);
+  updateLabels = labels(container);
 }
 
 function initializeAxesLabels() {
@@ -494,7 +494,6 @@ function bars(svg) {
             .remove()
             .attr("y", (d) => y((next.get(d) || d).rank))
             .attr("width", (d) => {
-              console.log(next.get(d));
               x((next.get(d) || d)["Weeks on Chart"]) - x(0);
             })
       )
@@ -533,15 +532,17 @@ function updateBarsOnClick() {
       <p>Artist: ${d["Performer"]}</p>
       <p>Album: ${d["Album"]}</p>
       <p>Genres: ${d["Spotify Genre List"]}</p>
-      <p>Click to play preview</p></div></div>`;
+      <p class="ital">Click to play preview</p></div></div>`;
       tooltip
         .html(tooltipString)
         .style("left", event.pageX + 10 + "px")
-        .style("top", event.pageY - 30 + "px");
+        .style("top", event.pageY - 15 + "px");
     })
     .on("mouseout", function (event, d) {
       d3.select(this).transition().duration("50").attr("opacity", "1");
-      tooltip.transition().duration("50").style("opacity", 0);
+      tooltip.transition().duration("0").style("opacity", 0);
+      tooltip.style("left", "0px").style("top", "0px");
+      tooltip.html("");
     })
     .on("click", function (event, d) {
       console.log(`clicked on:`);

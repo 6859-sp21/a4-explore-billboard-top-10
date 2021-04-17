@@ -12,6 +12,7 @@ body {
     padding: 0.5em;
     border-radius: 0.5em;
     opacity: 0;
+    font-size: 14px;
 }
 
 .viz {
@@ -65,11 +66,6 @@ h2 {
     padding-top: 2em;
     padding-left: 3em;
     width: 75%;
-}
-
-a {
-    display: block;
-    padding-top: 6em;
 }
 
 .column, .row {
@@ -126,7 +122,7 @@ img {
     margin: 0 0.5em 0.5em 0;
 } 
 
-#play-container, #stop-container, #next, #previous {
+#play-container, #stop-container, #next, #previous, rect {
     cursor: pointer;
 }
 
@@ -140,6 +136,22 @@ img {
     align-items: center;
 }
 
+
+.ital {
+    font-style: italic;
+}
+
+.deprioritize {
+    z-index: 1;
+}
+
+.prioritize {
+    z-index: 2; 
+}
+
+#sources {
+    margin-top: 4em;
+}
 
 
 .material-icons.md-18 {

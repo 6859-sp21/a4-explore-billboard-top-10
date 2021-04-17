@@ -14,7 +14,7 @@
   Explore the Billboard Hot 100
 </h2>
 <p class="no-margin">Top 10 Songs Per Week From 2018 to 2019</p>
-<div class="tooltip"></div>
+<div class="tooltip prioritize"></div>
 
 <div class="control-bar">
 <div class="column">
@@ -46,7 +46,7 @@
   </div> -->
   <div>
   <div class="row">
-    <h3>Genre Filters:</h3>
+    <h3>Genre Filters*:</h3>
     <div>
       <label>
     <input type="checkbox" class="filter" name="isPop"/>
@@ -92,14 +92,22 @@
       <img src=""/>
       <p id="song-playing"></p>
     </div>
-    <audio controls>
+    <audio controls class="deprioritize">
       <source src="">
     </audio>
   </div>
 </div>
-<a href = "https://data.world/kcmillersean/billboard-hot-100-1958-2017">Dataset</a>
 </body>
-<p class = "Disclaimer"> Disclaimer: When all genre filters are unselected, the chart for all genres is being shown</p>
+<p class = "Disclaimer"> *Disclaimer: When all genre filters are unselected, all genres are being shown</p>
+<div id="sources">
+  <p>
+    We drew inspiration from an observable notebook called <a href="https://observablehq.com/@d3/bar-chart-race-explained">"Bar Chart Race, Explained"</a>
+  </p>
+  <p>
+    <a href="https://data.world/kcmillersean/billboard-hot-100-1958-2017">Our data</a> for the Billboard Hot 100 was from Kaggle.
+  </p>  
+  <p>We used the <a href="https://developer.spotify.com/console/get-track/">Spotify API</a> to get album cover pictures and song previews.</p>
+</div>
 <script src="https://d3js.org/d3.v6.js"></script>
 <script src="script.js"></script>
 
